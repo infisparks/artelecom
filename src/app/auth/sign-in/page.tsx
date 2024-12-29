@@ -30,25 +30,7 @@ function SignInDefault() {
               <p className="text-base text-gray-600"> or </p>
               <div className="h-px w-full bg-gray-200 dark:!bg-navy-700" />
             </div>
-            {/* Email */}
-            <InputField
-              variant="auth"
-              extra="mb-3"
-              label="Email*"
-              placeholder="mail@simmmple.com"
-              id="email"
-              type="text"
-            />
-
-            {/* Password */}
-            <InputField
-              variant="auth"
-              extra="mb-3"
-              label="Password*"
-              placeholder="Min. 8 characters"
-              id="password"
-              type="password"
-            />
+           
             {/* Checkbox */}
             <div className="mb-4 flex items-center justify-between px-2">
               <div className="mt-2 flex items-center">
