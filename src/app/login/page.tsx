@@ -1,9 +1,8 @@
-// pages/auth/sign-in.tsx
 'use client';
 
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../../../firebase/firebaseConfig';
+import { auth } from '../../../firebase/firebaseConfig';
 import Default from 'components/auth/variants/DefaultAuthLayout';
 import InputField from 'components/fields/InputField';
 
@@ -30,7 +29,7 @@ function SignIn() {
   return (
     <Default
       maincard={
-        <div className="flex flex-col items-center justify-center w-full px-4 py-8 md:px-0 lg:py-10">
+        <div className="flex flex-col items-center justify-center w-full px-4 py-8 md:px-0 lg:py-10 dark:bg-gray-900">
           <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
             <h2 className="mb-6 text-3xl font-extrabold text-gray-900 dark:text-white text-center">
               Sign In
