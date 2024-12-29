@@ -1,4 +1,3 @@
-// pages/ProductList.tsx
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -145,6 +144,11 @@ function ProductList() {
     );
   }, [products, searchTerm]);
 
+  // Function to truncate description
+  const truncateDescription = (description: string, length: number = 20) => {
+    return description.length > length ? description.slice(0, length) + '...' : description;
+  };
+
   return (
     <div className="w-full px-4 py-8 md:px-0 lg:py-10">
       <div className="max-w-6xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
@@ -210,7 +214,7 @@ function ProductList() {
                       {product.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                      {product.description}
+                      {truncateDescription(product.description)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                       ₹{product.price.toFixed(2)}
@@ -282,7 +286,7 @@ function ProductList() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleEditInputChange(e, 'description')
                   }
-                />
+                /> 
 
                 {/* Price */}
                 <InputField

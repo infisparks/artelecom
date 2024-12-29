@@ -3,8 +3,14 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { auth, database } from '../../../../firebase/firebaseConfig';
-import { ref, onValue, push, set } from 'firebase/database'; // Imported 'set'
-import { FaSearch, FaTimes, FaPhoneAlt, FaMoneyCheckAlt, FaInfoCircle } from 'react-icons/fa';
+import { ref, onValue, push, set } from 'firebase/database'; // Using 'set'
+import {
+  FaSearch,
+  FaTimes,
+  FaPhoneAlt,
+  FaMoneyCheckAlt,
+  FaInfoCircle,
+} from 'react-icons/fa';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,7 +29,7 @@ interface Sale {
   name: string;
   price: number;
   description: string;
-  phoneNumber?: string;
+  phoneNumber?: string; // Optional field
   paymentMethod: 'cash' | 'online';
   soldAt: string;
 }
@@ -131,9 +137,12 @@ function SellPage() {
     setErrors({});
   };
 
-  // Validate phone number
+  // Validate phone number (optional)
   const validatePhoneNumber = (phone: string): string | undefined => {
-    if (phone === '') return undefined; // Optional field
+    // If phone is empty, no error (field is optional)
+    if (phone === '') return undefined;
+
+    // If phone is not empty, it should match a 10-digit regex
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
       return 'Please enter a valid 10-digit phone number.';
@@ -148,37 +157,44 @@ function SellPage() {
       toast.error('Please select a product to sell.');
       return;
     }
-
+  
     // Validate phone number
     const phoneError = validatePhoneNumber(phoneNumber);
     setErrors({ phoneNumber: phoneError });
-
+  
+    // If phone number is invalid, stop
     if (phoneError) {
       return;
     }
-
+  
     setIsSubmitting(true);
-
-    const saleData: Sale = {
-      id: '',
+  
+    const saleData: Omit<Sale, 'id'> = {
       productId: selectedProduct.id,
       name: selectedProduct.name,
       price: selectedProduct.price,
       description: selectedProduct.description,
-      phoneNumber: phoneNumber || undefined,
       paymentMethod,
       soldAt: new Date().toISOString(),
     };
-
+  
+    // Add phoneNumber only if it is not empty
+    if (phoneNumber.trim() !== '') {
+      saleData.phoneNumber = phoneNumber;
+    }
+  
     try {
       const salesRef = ref(database, 'sales');
       const newSaleRef = push(salesRef); // returns a DatabaseReference
-
-      saleData.id = newSaleRef.key as string;
-
-      // **Fixed Line:** Use 'set' instead of 'newSaleRef.set'
-      await set(newSaleRef, saleData);
-
+  
+      // Include the auto-generated ID in the saleData
+      const saleWithId = {
+        ...saleData,
+        id: newSaleRef.key as string,
+      };
+  
+      await set(newSaleRef, saleWithId);
+  
       toast.success('Product sold successfully.');
       // Reset form
       setSelectedProduct(null);
@@ -193,6 +209,7 @@ function SellPage() {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -249,7 +266,7 @@ function SellPage() {
           )}
         </div>
 
-        {/* Sell Form */}
+        {/* Sell Form (only if a product is selected) */}
         {selectedProduct && (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Product Name */}

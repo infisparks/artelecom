@@ -3,7 +3,7 @@ const Footer = () => {
     <div className="flex w-full flex-col items-center justify-between px-1 pb-8 pt-3 lg:px-8 xl:flex-row">
       <p className="mb-4 text-center text-sm font-medium text-gray-600 sm:!mb-0 md:text-lg">
         <span className="mb-4 text-center text-sm text-gray-600 sm:!mb-0 md:text-base">
-          ©{new Date().getFullYear()} Horizon UI. All Rights Reserved.
+          ©{new Date().getFullYear()} Infispark. All Rights Reserved.
         </span>
       </p>
       <div>
@@ -14,7 +14,7 @@ const Footer = () => {
               href="mailto:hello@simmmple.com"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
-              Support
+          
             </a>
           </li>
           <li>
@@ -23,25 +23,25 @@ const Footer = () => {
               href="https://simmmple.com/licenses"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
-              License
+        
             </a>
           </li>
           <li>
             <a
               target="blank"
-              href="https://simmmple.com/terms-of-service"
+              href="https://infispark.in"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
-              Terms of Use
+         Infispark
             </a>
           </li>
           <li>
             <a
               target="blank"
-              href="https://blog.horizon-ui.com/"
+              href="https://infispark.in"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
-              Blog
+       
             </a>
           </li>
         </ul>
