@@ -44,7 +44,10 @@ function SellPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [user, setUser] = useState<any>(null);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [errors, setErrors] = useState<{ phoneNumber?: string }>({});
+  const [errors, setErrors] = useState<{ phoneNumber?: string; price?: string }>({});
+
+  const [isPriceEditable, setIsPriceEditable] = useState<boolean>(false);
+  const [editedPrice, setEditedPrice] = useState<number | undefined>(undefined);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -119,6 +122,9 @@ function SellPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setShowDropdown(true);
+    // Reset price edit states when searching
+    setIsPriceEditable(false);
+    setEditedPrice(undefined);
   };
 
   // Filtered products based on search term
@@ -135,6 +141,8 @@ function SellPage() {
     setSearchTerm(product.name);
     setShowDropdown(false);
     setErrors({});
+    setIsPriceEditable(false);
+    setEditedPrice(undefined);
   };
 
   // Validate phone number (optional)
@@ -150,6 +158,19 @@ function SellPage() {
     return undefined;
   };
 
+  // Validate edited price (optional)
+  const validateEditedPrice = (price: number | undefined): string | undefined => {
+    if (isPriceEditable) {
+      if (price === undefined || isNaN(price)) {
+        return 'Please enter a valid price.';
+      }
+      if (price <= 0) {
+        return 'Price must be a positive number.';
+      }
+    }
+    return undefined;
+  };
+
   // Handle form submission for selling a product
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,44 +178,45 @@ function SellPage() {
       toast.error('Please select a product to sell.');
       return;
     }
-  
+
     // Validate phone number
     const phoneError = validatePhoneNumber(phoneNumber);
-    setErrors({ phoneNumber: phoneError });
-  
-    // If phone number is invalid, stop
-    if (phoneError) {
+    const priceError = validateEditedPrice(editedPrice);
+    setErrors({ phoneNumber: phoneError, price: priceError });
+
+    // If phone number or price is invalid, stop
+    if (phoneError || priceError) {
       return;
     }
-  
+
     setIsSubmitting(true);
-  
+
     const saleData: Omit<Sale, 'id'> = {
       productId: selectedProduct.id,
       name: selectedProduct.name,
-      price: selectedProduct.price,
+      price: isPriceEditable && editedPrice !== undefined ? editedPrice : selectedProduct.price,
       description: selectedProduct.description,
       paymentMethod,
       soldAt: new Date().toISOString(),
     };
-  
+
     // Add phoneNumber only if it is not empty
     if (phoneNumber.trim() !== '') {
       saleData.phoneNumber = phoneNumber;
     }
-  
+
     try {
       const salesRef = ref(database, 'sales');
       const newSaleRef = push(salesRef); // returns a DatabaseReference
-  
+
       // Include the auto-generated ID in the saleData
       const saleWithId = {
         ...saleData,
         id: newSaleRef.key as string,
       };
-  
+
       await set(newSaleRef, saleWithId);
-  
+
       toast.success('Product sold successfully.');
       // Reset form
       setSelectedProduct(null);
@@ -202,6 +224,8 @@ function SellPage() {
       setPaymentMethod('cash');
       setSearchTerm('');
       setErrors({});
+      setIsPriceEditable(false);
+      setEditedPrice(undefined);
     } catch (error) {
       console.error('Error selling product:', error);
       toast.error('Failed to sell product. Please try again.');
@@ -209,7 +233,6 @@ function SellPage() {
       setIsSubmitting(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -240,6 +263,8 @@ function SellPage() {
                 setSearchTerm('');
                 setSelectedProduct(null);
                 setShowDropdown(false);
+                setIsPriceEditable(false);
+                setEditedPrice(undefined);
               }}
               className="absolute right-3 top-3 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition duration-200"
               aria-label="Clear search"
@@ -289,7 +314,7 @@ function SellPage() {
               </div>
             </div>
 
-            {/* Price */}
+            {/* Price and Edit Option */}
             <div className="flex items-center">
               <FaMoneyCheckAlt className="text-gray-500 mr-3" />
               <div className="w-full">
@@ -299,13 +324,41 @@ function SellPage() {
                 >
                   Price (₹)
                 </label>
-                <input
-                  type="number"
-                  id="price"
-                  value={selectedProduct.price}
-                  disabled
-                  className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none"
-                />
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    id="price"
+                    value={isPriceEditable && editedPrice !== undefined ? editedPrice : selectedProduct.price}
+                    onChange={(e) => {
+                      if (isPriceEditable) {
+                        setEditedPrice(parseFloat(e.target.value));
+                      }
+                    }}
+                    disabled={!isPriceEditable}
+                    placeholder="Enter sale price"
+                    className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.price
+                        ? 'border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 dark:border-gray-700 focus:ring-[#432BF8]'
+                    } dark:bg-gray-700 dark:text-white transition duration-200`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPriceEditable((prev) => !prev);
+                      if (isPriceEditable) {
+                        setEditedPrice(undefined);
+                        setErrors((prev) => ({ ...prev, price: undefined }));
+                      }
+                    }}
+                    className="ml-3 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition duration-200"
+                  >
+                    {isPriceEditable ? 'Cancel' : 'Edit'}
+                  </button>
+                </div>
+                {isPriceEditable && errors.price && (
+                  <p className="text-red-500 text-xs mt-1">{errors.price}</p>
+                )}
               </div>
             </div>
 
